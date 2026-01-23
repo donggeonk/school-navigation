@@ -1,0 +1,30 @@
+{
+  "name": "school-navigation-app",
+  "version": "1.0.0",
+  "description": "A navigation application for a school, featuring a static map overview and navigation capabilities.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "leaflet": "^1.7.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-dev-server": "^3.11.2",
+    "babel-loader": "^8.2.2",
+    "babel-preset-react": "^6.24.1"
+  },
+  "keywords": [
+    "school",
+    "navigation",
+    "map"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
