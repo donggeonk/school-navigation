@@ -1,37 +1,52 @@
-from flask import Flask, jsonify, send_from_directory
+import os
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from models import SchoolMap
-import os
 
-app = Flask(__name__)
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'src')
+
+app = Flask(__name__, static_folder=FRONTEND_DIR)
 CORS(app)
 
 school_map = SchoolMap()
 
-# Path to frontend files
-FRONTEND_PATH = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'src')
-
 @app.route('/')
-def serve_index():
-    """Serve the main HTML page"""
-    return send_from_directory(FRONTEND_PATH, 'index.html')
+def index():
+    return send_from_directory(FRONTEND_DIR, 'index.html')
 
 @app.route('/<path:filename>')
-def serve_static(filename):
-    """Serve static files (CSS, JS)"""
-    return send_from_directory(FRONTEND_PATH, filename)
+def static_files(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
 
-@app.route('/api/map', methods=['GET'])
+@app.route('/api/map')
 def get_map():
-    """Return all nodes and their coordinates"""
-    nodes_data = []
+    nodes = []
     for name, node in school_map.nodes.items():
-        nodes_data.append({
+        nodes.append({
             'name': name,
-            'coordinates': node.coordinates,
-            'connections': [conn.name for conn in node.connections]
+            'coordinates': list(node.coordinates),
+            'connections': [c.name for c in node.connections]
         })
-    return jsonify(nodes_data)
+    return jsonify(nodes)
+
+@app.route('/api/navigate')
+def navigate():
+    start = request.args.get('start')
+    end = request.args.get('end')
+
+    if not start or not end:
+        return jsonify({'error': 'Missing start or end parameter'}), 400
+
+    path = school_map.find_shortest_path(start, end)
+
+    if path is None:
+        return jsonify({'error': 'No path found'}), 404
+
+    return jsonify({
+        'start': start,
+        'end': end,
+        'path': path  # List of [x, y] coordinates
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

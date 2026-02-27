@@ -13,16 +13,30 @@ html, body {
 .container {
     width: 100%;
     height: 100%;
-    padding: 15px;
+    padding: 10px 25px 25px 25px; /* Reduced top padding from 25px to 20px */
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Aligns items to the left */
+    gap: 12px; /* Adds space between the logo and the title */
+    margin-bottom: 15px; 
 }
 
 h1 {
-    text-align: right;
-    margin-bottom: 10px;
+    text-align: left;
     color: #333;
-    font-size: 18px;
+    font-size: 24px; 
+    margin-bottom: 0; 
+}
+
+.logo {
+    height: 55px; 
+    width: auto;
 }
 
 .map-container {
@@ -32,6 +46,7 @@ h1 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 10px;
     min-height: 0;
+    margin-right: 320px; 
 }
 
 canvas {
@@ -39,4 +54,101 @@ canvas {
     width: 100%;
     height: 100%;
     border: 1px solid #ddd;
+}
+
+.navigation-panel {
+    position: absolute;
+    top: 80px; /* Pushed down slightly from 70px to account for the taller logo */
+    right: 25px; 
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    min-width: 300px; 
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.nav-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background-color: #4a90d9;
+    margin: -16px -16px 12px -16px; /* Pulls the header to the edges of the padded container */
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0; /* Rounds the top corners to match the panel */
+    border-bottom: none;
+}
+
+.nav-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+.nav-field select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #fafafa;
+    cursor: pointer;
+}
+
+.nav-field select:focus {
+    outline: none;
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+#navigateBtn {
+    flex: 1;
+    padding: 10px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#navigateBtn:hover {
+    background: #357abd;
+}
+
+#doneBtn {
+    flex: 1;
+    padding: 10px;
+    background: #9e9e9e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#doneBtn:hover {
+    background: #757575;
+}
+
+.container {
+    position: relative;
 }
