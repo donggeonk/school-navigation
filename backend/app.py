@@ -2,6 +2,7 @@ import os
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from models import SchoolMap
+from chat_agent import school_chat
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'src')
 
@@ -13,10 +14,6 @@ school_map = SchoolMap()
 @app.route('/')
 def index():
     return send_from_directory(FRONTEND_DIR, 'index.html')
-
-@app.route('/<path:filename>')
-def static_files(filename):
-    return send_from_directory(FRONTEND_DIR, filename)
 
 @app.route('/api/map')
 def get_map():
@@ -47,6 +44,33 @@ def navigate():
         'end': end,
         'path': path  # List of [x, y] coordinates
     })
+
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.get_json(silent=True) or {}
+    message = (data.get('message') or '').strip()
+    current_start = (data.get('start') or '').strip()
+    current_destination = (data.get('destination') or '').strip()
+
+    if not message:
+        return jsonify({'error': 'No message provided'}), 400
+
+    try:
+        response = school_chat(
+            message,
+            current_start=current_start,
+            current_destination=current_destination
+        )
+    except Exception as exc:
+        return jsonify({'error': f'Chat request failed: {exc}'}), 500
+
+    return jsonify(response)
+
+
+@app.route('/<path:filename>')
+def static_files(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

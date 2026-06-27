@@ -12,27 +12,54 @@
             <img src="icons/kis.png" alt="KIS Logo" class="logo">
             <h1>Korea International School</h1>
         </div>
-        <div class="navigation-panel">
-            <h2 class="nav-title">Navigation</h2>
-            <div class="nav-field">
-                <label for="startSelect">Start:</label>
-                <select id="startSelect">
-                    <option value="">-- Select Start --</option>
-                </select>
+        <div class="side-panel-stack">
+            <div class="navigation-panel">
+                <h2 class="nav-title">Navigation</h2>
+                <div class="nav-field">
+                    <label for="startSelect">Start:</label>
+                    <select id="startSelect">
+                        <option value="">-- Select Start --</option>
+                    </select>
+                </div>
+                <div class="nav-field">
+                    <label for="destSelect">Destination:</label>
+                    <select id="destSelect">
+                        <option value="">-- Select Destination --</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button id="navigateBtn">Navigate</button>
+                    <button id="doneBtn">Done</button>
+                </div>
             </div>
-            <div class="nav-field">
-                <label for="destSelect">Destination:</label>
-                <select id="destSelect">
-                    <option value="">-- Select Destination --</option>
-                </select>
-            </div>
-            <div class="button-group">
-                <button id="navigateBtn">Navigate</button>
-                <button id="doneBtn">Done</button>
+
+            <div class="chat-panel">
+                <h2 class="chat-title">KIS Assistant</h2>
+                <div id="chatMessages" class="chat-messages">
+                    <div class="chat-message bot-message">Hi, welcome to KIS!</div>
+                </div>
+                <div class="chat-input-row">
+                    <input
+                        id="chatInput"
+                        type="text"
+                        placeholder="Ask: Where is A101?"
+                        maxlength="300"
+                    />
+                    <button id="chatSendBtn">Send</button>
+                </div>
             </div>
         </div>
         <div class="map-container">
             <canvas id="mapCanvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Blueprint Modal -->
+    <div id="blueprintModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            <div id="blueprintFloorControls" class="floor-controls"></div>
+            <img id="blueprintImage" src="" alt="Blueprint">
         </div>
     </div>
 

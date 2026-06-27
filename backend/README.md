@@ -35,14 +35,27 @@ The backend will start running on `http://localhost:5000`.
 ## API Endpoints
 
 - **GET /api/navigate**: Computes the navigation path between two locations.
-- **GET /api/locations**: Returns the list of available locations on the campus.
+- **GET /api/map**: Returns all map nodes and their coordinates.
+- **POST /api/chat**: Chatbot endpoint powered by OpenAI + local RAG context.
+
+## Chatbot Setup
+
+1. Add your OpenAI key to `backend/.env`:
+   ```
+   OPENAI_API="your-openai-api-key"
+   ```
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Customize RAG data anytime:
+   - `backend/school_knowledge.txt` for plain-text chunks (separate topics with blank lines)
+   - `backend/school_knowledge_custom.json` for structured entries (`title`, `content`, `tags`)
+
+The chatbot auto-reloads these files and uses them for retrieval.
 
 ## Future Plans
 
 - Add detailed classroom information and floor blueprints.
 - Implement user authentication for personalized navigation experiences.
 - Enhance the navigation algorithm to consider accessibility options.
-
-## Contributions
-
-Contributions are welcome! Please submit a pull request or open an issue for any suggestions or improvements.

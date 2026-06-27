@@ -3,6 +3,14 @@ let mapData = [];
 let currentPath = [];
 let pathStart = '';
 let pathEnd = '';
+let isChatSending = false;
+
+// const campusBoundary = [
+//     [60, 180],
+//     [650, 180],
+//     [650, 400],
+//     [60, 400]
+// ];
 
 // Map each location to its icon filename
 const iconFiles = {
@@ -21,6 +29,31 @@ const iconFiles = {
     "Bus Area": "bus.png"
 };
 
+const blueprintFloors = {
+    "High School": [
+        { label: "B", file: "high_school_base.png" },
+        { label: "1", file: "high_school.png" },
+        { label: "2", file: "high_school_2.png" },
+        { label: "3", file: "high_school_3.png" },
+        { label: "4", file: "high_school_4.png" },
+        { label: "5", file: "high_school_5.png" },
+        { label: "6", file: "high_school_6.png" },
+        { label: "7", file: "high_school_7.png" }
+    ],
+    "Middle School": [
+        { label: "1", file: "middle_school.png" }
+    ],
+    "Elementary School": [
+        { label: "1", file: "elementary_school.png" },
+        { label: "2", file: "elementary_school_2.png" }
+    ],
+    "Cafeteria": [
+        { label: "1", file: "cafeteria.png" },
+        { label: "2", file: "cafeteria_2.png" },
+        { label: "2-1", file: "cafeteria_2_1.png" }
+    ]
+};
+
 const icons = {}; // Will store the loaded Image objects
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -31,6 +64,37 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 window.addEventListener('resize', () => {
     drawMap();
+});
+
+document.getElementById('mapCanvas').addEventListener('click', (event) => {
+    const clickedBuilding = getClickedBlueprintBuilding(event);
+
+    if (clickedBuilding) {
+        openBlueprintModal(clickedBuilding);
+    }
+});
+
+document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
+    const canvas = document.getElementById('mapCanvas');
+    canvas.style.cursor = getClickedBlueprintBuilding(event) ? 'pointer' : 'default';
+});
+
+document.getElementById('mapCanvas').addEventListener('mouseleave', () => {
+    document.getElementById('mapCanvas').style.cursor = 'default';
+});
+
+document.getElementById('closeModalBtn').addEventListener('click', closeBlueprintModal);
+
+document.getElementById('blueprintModal').addEventListener('click', (event) => {
+    if (event.target.id === 'blueprintModal') {
+        closeBlueprintModal();
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        closeBlueprintModal();
+    }
 });
 
 // Preload all images
@@ -51,6 +115,117 @@ async function loadIcons() {
         });
     });
     await Promise.all(promises);
+}
+
+function getCanvasPoint(event) {
+    const canvas = document.getElementById('mapCanvas');
+    const rect = canvas.getBoundingClientRect();
+
+    return {
+        x: (event.clientX - rect.left) * (canvas.width / rect.width),
+        y: (event.clientY - rect.top) * (canvas.height / rect.height)
+    };
+}
+
+function getBuildingHitBox(node) {
+    const canvas = document.getElementById('mapCanvas');
+    const scaleX = canvas.width / 800;
+    const scaleY = canvas.height / 600;
+    const scale = Math.min(scaleX, scaleY);
+    const [mapX, mapY] = node.coordinates;
+    const iconSize = 50 * scale;
+    const padding = 16 * scale;
+    const bgSize = iconSize + padding;
+    const centerX = mapX * scaleX;
+    const centerY = mapY * scaleY;
+
+    return {
+        left: centerX - bgSize / 2,
+        right: centerX + bgSize / 2,
+        top: centerY - bgSize / 2,
+        bottom: centerY + bgSize / 2
+    };
+}
+
+function getClickedBlueprintBuilding(event) {
+    const point = getCanvasPoint(event);
+
+    for (const node of mapData) {
+        if (!blueprintFloors[node.name]) {
+            continue;
+        }
+
+        const hitBox = getBuildingHitBox(node);
+        const isInside =
+            point.x >= hitBox.left &&
+            point.x <= hitBox.right &&
+            point.y >= hitBox.top &&
+            point.y <= hitBox.bottom;
+
+        if (isInside) {
+            return node.name;
+        }
+    }
+
+    return null;
+}
+
+function openBlueprintModal(buildingName, floorLabel = "1") {
+    const modal = document.getElementById('blueprintModal');
+    const floors = blueprintFloors[buildingName];
+
+    if (!floors || floors.length === 0) {
+        return false;
+    }
+
+    const selectedFloor = floors.find(floor => floor.label === floorLabel) ||
+        floors.find(floor => floor.label === "1") ||
+        floors[0];
+
+    renderFloorButtons(buildingName, floors);
+    showBlueprintFloor(buildingName, selectedFloor);
+    modal.style.display = 'flex';
+    return true;
+}
+
+function renderFloorButtons(buildingName, floors) {
+    const floorControls = document.getElementById('blueprintFloorControls');
+    floorControls.innerHTML = '';
+
+    floors.forEach(floor => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'floor-button';
+        button.textContent = floor.label;
+        button.setAttribute('aria-label', `${buildingName} floor ${floor.label}`);
+        button.addEventListener('click', () => {
+            showBlueprintFloor(buildingName, floor);
+        });
+        floorControls.appendChild(button);
+    });
+}
+
+function showBlueprintFloor(buildingName, floor) {
+    const blueprintImage = document.getElementById('blueprintImage');
+    const floorButtons = document.querySelectorAll('.floor-button');
+
+    blueprintImage.src = `/blueprints/${floor.file}`;
+    blueprintImage.alt = `${buildingName} floor ${floor.label} blueprint`;
+
+    floorButtons.forEach(button => {
+        button.classList.toggle('active', button.textContent === floor.label);
+    });
+}
+
+function closeBlueprintModal() {
+    const modal = document.getElementById('blueprintModal');
+    const blueprintImage = document.getElementById('blueprintImage');
+    const floorControls = document.getElementById('blueprintFloorControls');
+
+    modal.style.display = 'none';
+    blueprintImage.src = '';
+    blueprintImage.alt = 'Blueprint';
+    floorControls.innerHTML = '';
 }
 
 async function loadMap() {
@@ -85,6 +260,8 @@ function drawMap() {
         drawNavigationPath(ctx, scaleX, scaleY);
     }
 
+    // drawCampusBoundary(ctx, scaleX, scaleY);
+
     // Draw buildings/locations
     mapData.forEach(node => {
         const [x, y] = node.coordinates;
@@ -92,6 +269,25 @@ function drawMap() {
         const isEnd = node.name === pathEnd;
         drawBuilding(ctx, x * scaleX, y * scaleY, node.name, Math.min(scaleX, scaleY), isStart, isEnd);
     });
+}
+
+function drawCampusBoundary(ctx, scaleX, scaleY) {
+    if (campusBoundary.length < 2) return;
+
+    ctx.save();
+    ctx.strokeStyle = '#7a7a7a';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(campusBoundary[0][0] * scaleX, campusBoundary[0][1] * scaleY);
+
+    for (let i = 1; i < campusBoundary.length; i++) {
+        ctx.lineTo(campusBoundary[i][0] * scaleX, campusBoundary[i][1] * scaleY);
+    }
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
 }
 
 function drawBuilding(ctx, x, y, name, scale, isStart, isEnd) {
@@ -117,9 +313,15 @@ function drawBuilding(ctx, x, y, name, scale, isStart, isEnd) {
     ctx.fillStyle = '#84d988'; // Dark green color
     ctx.fill();
     
-    // Optional: Add a subtle inner border to the dark green box
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#0d3b13';
+    const highlightBuildings = ["High School", "Middle School", "Cafeteria", "Elementary School"];
+    
+    if (highlightBuildings.includes(name)) {
+        ctx.lineWidth = 3;            // clickable icons to view floorplans
+        ctx.strokeStyle = '#2f85a2'; 
+    } else {
+        ctx.lineWidth = 2;            
+        ctx.strokeStyle = '#0d3b13';
+    }
     ctx.stroke();
 
     // Draw the icon image
@@ -264,17 +466,24 @@ function populateDropdowns() {
     });
 }
 
-document.getElementById("navigateBtn").addEventListener("click", async () => {
-    const start = document.getElementById("startSelect").value;
-    const dest = document.getElementById("destSelect").value;
+async function runNavigation(start, dest, options = {}) {
+    const { showAlertOnError = true } = options;
+
+    function handleError(message) {
+        if (showAlertOnError) {
+            alert(message);
+        }
+        return {
+            success: false,
+            error: message
+        };
+    }
 
     if (!start || !dest) {
-        alert("Please select both a start and a destination.");
-        return;
+        return handleError("Please select both a start and a destination.");
     }
     if (start === dest) {
-        alert("Start and destination cannot be the same.");
-        return;
+        return handleError("Start and destination cannot be the same.");
     }
 
     try {
@@ -284,8 +493,7 @@ document.getElementById("navigateBtn").addEventListener("click", async () => {
         const data = await response.json();
 
         if (data.error) {
-            alert(data.error);
-            return;
+            return handleError(data.error);
         }
 
         pathStart = data.start;
@@ -293,10 +501,35 @@ document.getElementById("navigateBtn").addEventListener("click", async () => {
         currentPath = data.path;  // Array of [x, y] coordinates
         console.log('Path found:', currentPath.length, 'waypoints');
         drawMap();
+        return {
+            success: true
+        };
     } catch (error) {
         console.error('Navigation error:', error);
-        alert('Failed to find a path. Make sure the server is running.');
+        return handleError('Failed to find a path. Make sure the server is running.');
     }
+}
+
+async function applyChatNavigation(navigation) {
+    if (!navigation || !navigation.start || !navigation.destination) {
+        return {
+            success: false,
+            error: "Chatbot returned an incomplete navigation request."
+        };
+    }
+
+    document.getElementById("startSelect").value = navigation.start;
+    document.getElementById("destSelect").value = navigation.destination;
+
+    return runNavigation(navigation.start, navigation.destination, {
+        showAlertOnError: false
+    });
+}
+
+document.getElementById("navigateBtn").addEventListener("click", async () => {
+    const start = document.getElementById("startSelect").value;
+    const dest = document.getElementById("destSelect").value;
+    await runNavigation(start, dest);
 });
 
 // Add event listener for the Done button to clear the path
@@ -307,6 +540,98 @@ document.getElementById("doneBtn").addEventListener("click", () => {
     document.getElementById("startSelect").value = '';
     document.getElementById("destSelect").value = '';
     drawMap();
+});
+
+function appendChatMessage(text, type) {
+    const chatMessages = document.getElementById("chatMessages");
+    const bubble = document.createElement("div");
+    bubble.className = `chat-message ${type === "user" ? "user-message" : "bot-message"}`;
+    bubble.textContent = text;
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function setSuggestedDestination(location) {
+    if (!location || !locations.includes(location)) {
+        return;
+    }
+
+    document.getElementById("destSelect").value = location;
+}
+
+function applyChatBlueprint(blueprint) {
+    if (!blueprint || !blueprint.building) {
+        return false;
+    }
+
+    return openBlueprintModal(blueprint.building, blueprint.floor || "1");
+}
+
+async function sendChatMessage() {
+    const chatInput = document.getElementById("chatInput");
+    const sendButton = document.getElementById("chatSendBtn");
+    const message = chatInput.value.trim();
+
+    if (!message || isChatSending) {
+        return;
+    }
+
+    appendChatMessage(message, "user");
+    chatInput.value = "";
+    isChatSending = true;
+    sendButton.disabled = true;
+
+    const selectedStart = document.getElementById("startSelect").value;
+    const selectedDestination = document.getElementById("destSelect").value;
+
+    try {
+        const response = await fetch(`${API_URL}/chat`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message,
+                start: selectedStart,
+                destination: selectedDestination
+            })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+            appendChatMessage(`Error: ${data.error}`, "bot");
+            return;
+        }
+
+        if (data.navigation) {
+            const navigationResult = await applyChatNavigation(data.navigation);
+            if (!navigationResult.success) {
+                appendChatMessage(navigationResult.error, "bot");
+            }
+        } else if (data.suggested_destination) {
+            setSuggestedDestination(data.suggested_destination);
+        }
+
+        if (data.blueprint && !applyChatBlueprint(data.blueprint)) {
+            appendChatMessage("I found a blueprint request, but could not open that building or floor.", "bot");
+        }
+
+        appendChatMessage(data.message || "I could not generate a response.", "bot");
+    } catch (error) {
+        console.error("Chat error:", error);
+        appendChatMessage("Could not reach the chatbot service.", "bot");
+    } finally {
+        isChatSending = false;
+        sendButton.disabled = false;
+    }
+}
+
+document.getElementById("chatSendBtn").addEventListener("click", sendChatMessage);
+document.getElementById("chatInput").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        sendChatMessage();
+    }
 });
 
 populateDropdowns();

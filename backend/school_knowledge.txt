@@ -1,0 +1,47 @@
+School Overview
+Korea International School navigation map includes various connected destinations such as the: Main Entrance, Soccer Field, Elementary School, Play Spaces, Cafeteria, Lower Hill, Middle School, Secondary Library, Performing Arts, High School, Outdoor Field, G Building, and Bus Area.
+
+Main Entrance
+The Main Entrance is the primary arrival point for visitors and families. It connects directly toward Elementary School and the Cafeteria paths.
+
+Soccer Field
+The Soccer Field is the main outdoor pitch for PE, team practices, and interschool matches. Typical after-school use includes soccer training, conditioning drills, and seasonal team tryouts.
+
+Elementary School
+Elementary School classrooms are grouped by grade-level homerooms and shared learning spaces.
+
+Play Spaces
+Play Spaces include outdoor recreation areas for break time and elementary activities. These areas are connected to both the Soccer Field side and Middle School side routes.
+
+Cafeteria
+The Cafeteria is a central lunch and gathering area for students and staff. It is a major routing hub that connects toward Main Entrance, Elementary School, Secondary Library, and Lower Hill.
+
+Lower Hill
+Lower Hill is the sloped transition route that links the central campus to the Performing Arts side. It is primarily used as a walking connector.
+
+Middle School
+Middle School contains core academic classrooms and advisory spaces. Example classroom references include M101, M202, and M305.
+
+Secondary Library
+Secondary Library supports research, study blocks, and collaborative work time. Nearby classroom-style references can include H201 and H202 seminar spaces.
+
+Performing Arts
+Performing Arts includes rehearsal and performance rooms used for drama, music, and school productions. This zone connects to Lower Hill, Secondary Library, and Outdoor Field routes.
+
+High School
+High School contains upper-grade classrooms and labs. Common classroom references include H101, H203, and H305.
+
+Outdoor Field
+Outdoor Field is a general multi-use field area for PE, sports conditioning, and large outdoor activities.
+
+G Building
+G Building is an academic building often used for specialized classes and small group sessions. Common classroom references include G301, G402, and G201.
+
+Bus Area
+Bus Area is the transportation pickup and drop-off zone. It is typically the endpoint for dismissal routing.
+
+Classroom To Building Reference
+M101, M202, and M305 are in Middle School. H101, H203, and H305 are in High School. G301, G102, and G201 are in G Building. H201 and H202 are in Secondary Library.
+
+Event Notes
+Soccer Field events usually include PE classes during school hours and soccer-related activities after school. Outdoor Field events may include assemblies, athletics, and seasonal school programs. Event schedules can change, so students should confirm exact times with school announcements.

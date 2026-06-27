@@ -17,27 +17,29 @@ class SchoolMap:
     BUILDING_HALF_W = 55
     BUILDING_HALF_H = 32
     BUILDING_MARGIN = 10
+    BOUNDARY_LEFT = 60
+    BOUNDARY_TOP = 180
+    BOUNDARY_RIGHT = 650
+    BOUNDARY_BOTTOM = 400
 
     def __init__(self):
         self.nodes = {}
         self.create_map()
         self.obstacle_grid = self._build_obstacle_grid()
 
-    def create_map(self):
-        # ...existing code...
-        main_entrance = Node("Main Entrance", (400, 50))
-        soccer_field = Node("Soccer Field", (80, 120))
-        elementary_school = Node("Elementary School", (280, 120))
-        play_spaces = Node("Play Spaces", (150, 220))
-        cafeteria = Node("Cafeteria", (400, 200))
-        lower_hill = Node("Lower Hill", (600, 200))
-        middle_school = Node("Middle School", (150, 320))
-        secondary_library = Node("Secondary Library", (400, 320))
-        performing_arts = Node("Performing Arts", (620, 320))
-        high_school = Node("High School", (280, 420))
-        outdoor_field = Node("Outdoor Field", (500, 420))
-        g_building = Node("G Building", (150, 520))
-        bus_area = Node("Bus Area", (500, 520))
+    def create_map(self): # (x, y)
+        main_entrance = Node("Main Entrance", (50, 300))
+        soccer_field = Node("Soccer Field", (120, 220))
+        elementary_school = Node("Elementary School", (200, 220))
+        play_spaces = Node("Play Spaces", (280, 170))
+        cafeteria = Node("Cafeteria", (280, 280))
+        lower_hill = Node("Lower Hill", (650, 150))
+        middle_school = Node("Middle School", (360, 220))
+        secondary_library = Node("Secondary Library", (430, 280))
+        performing_arts = Node("Performing Arts", (430, 170))
+        high_school = Node("High School", (500, 220))
+        g_building = Node("G Building", (360, 420))
+        bus_area = Node("Bus Area", (200, 400))
 
         self.nodes = {
             "Main Entrance": main_entrance,
@@ -50,7 +52,6 @@ class SchoolMap:
             "Secondary Library": secondary_library,
             "Performing Arts": performing_arts,
             "High School": high_school,
-            "Outdoor Field": outdoor_field,
             "G Building": g_building,
             "Bus Area": bus_area
         }
@@ -70,28 +71,49 @@ class SchoolMap:
         middle_school.add_connection(g_building)
         secondary_library.add_connection(high_school)
         secondary_library.add_connection(performing_arts)
-        performing_arts.add_connection(outdoor_field)
-        high_school.add_connection(outdoor_field)
         high_school.add_connection(g_building)
-        outdoor_field.add_connection(bus_area)
         g_building.add_connection(bus_area)
 
     def _build_obstacle_grid(self):
-        """Build a set of blocked (x, y) cells from building rectangles."""
-        blocked = set()
-        hw = self.BUILDING_HALF_W + self.BUILDING_MARGIN
-        hh = self.BUILDING_HALF_H + self.BUILDING_MARGIN
-
-        for node in self.nodes.values():
-            cx, cy = node.coordinates
-            for x in range(max(0, cx - hw), min(self.GRID_WIDTH, cx + hw + 1)):
-                for y in range(max(0, cy - hh), min(self.GRID_HEIGHT, cy + hh + 1)):
-                    blocked.add((x, y))
-        return blocked
+        """Buildings are not pathfinding obstacles in the current map."""
+        return set()
 
     def _heuristic(self, a, b):
         """Euclidean distance heuristic for A*."""
         return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
+
+    def _is_inside_boundary(self, point):
+        x, y = point
+        return (
+            self.BOUNDARY_LEFT <= x <= self.BOUNDARY_RIGHT
+            and self.BOUNDARY_TOP <= y <= self.BOUNDARY_BOTTOM
+        )
+
+    def _closest_boundary_point(self, point):
+        x, y = point
+        clamped_x = min(max(x, self.BOUNDARY_LEFT), self.BOUNDARY_RIGHT)
+        clamped_y = min(max(y, self.BOUNDARY_TOP), self.BOUNDARY_BOTTOM)
+        return (clamped_x, clamped_y)
+
+    def _get_special_case_path(self, start_name, end_name):
+        """Return a hand-tuned path for routes that should follow campus walkways."""
+        special_paths = {
+            ("Main Entrance", "Play Spaces"): [
+                [60, 300],
+                [240, 255],
+                [280, 180],
+            ],
+        }
+
+        path = special_paths.get((start_name, end_name))
+        if path:
+            return path
+
+        reverse_path = special_paths.get((end_name, start_name))
+        if reverse_path:
+            return list(reversed(reverse_path))
+
+        return None
 
     def _line_of_sight(self, p1, p2, blocked):
         """Check if a straight line between p1 and p2 is free of obstacles.
@@ -112,6 +134,8 @@ class SchoolMap:
             x = int(x0 + dx * t)
             y = int(y0 + dy * t)
             if (x, y) in blocked:
+                return False
+            if not self._is_inside_boundary((x, y)):
                 return False
         return True
 
@@ -145,23 +169,16 @@ class SchoolMap:
         if not start_node or not end_node:
             return None
 
+        special_case_path = self._get_special_case_path(start_name, end_name)
+        if special_case_path:
+            return special_case_path
+
         if start_name == end_name:
-            return [list(start_node.coordinates)]
+            return [list(self._closest_boundary_point(tuple(start_node.coordinates)))]
 
-        start = tuple(start_node.coordinates)
-        end = tuple(end_node.coordinates)
-
-        # Build the set of obstacles, but exclude start and end building areas
-        hw = self.BUILDING_HALF_W + self.BUILDING_MARGIN
-        hh = self.BUILDING_HALF_H + self.BUILDING_MARGIN
-        excluded_buildings = set()
-        for name in (start_name, end_name):
-            cx, cy = self.nodes[name].coordinates
-            for x in range(max(0, cx - hw), min(self.GRID_WIDTH, cx + hw + 1)):
-                for y in range(max(0, cy - hh), min(self.GRID_HEIGHT, cy + hh + 1)):
-                    excluded_buildings.add((x, y))
-
-        blocked = self.obstacle_grid - excluded_buildings
+        start = self._closest_boundary_point(tuple(start_node.coordinates))
+        end = self._closest_boundary_point(tuple(end_node.coordinates))
+        blocked = self.obstacle_grid
 
         # A* with step size to speed things up
         STEP = 5
@@ -194,6 +211,9 @@ class SchoolMap:
                 nx, ny = current[0] + dx, current[1] + dy
 
                 if nx < 0 or nx >= self.GRID_WIDTH or ny < 0 or ny >= self.GRID_HEIGHT:
+                    continue
+
+                if not self._is_inside_boundary((nx, ny)):
                     continue
 
                 if (nx, ny) in blocked:
